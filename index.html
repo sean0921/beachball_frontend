@@ -1,0 +1,236 @@
+<html>
+<head>
+
+<script type='text/javascript' src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link href='https://cdn.jsdelivr.net/npm/bootstrap@3/dist/css/bootstrap.min.css' rel='stylesheet'>
+<link href='./webmeca.css' rel='stylesheet'>
+<title>Online Focal Mecanism</title>
+<script>
+	$(function(){
+		$("#explandiv").hide();
+		$("#explan-toggle").click(function (){$("#explandiv").slideToggle();});
+		$(".color-ctrl").change(function(){
+			var colorgroups=['bar','textbox'];
+			for (var i in colorgroups){
+				//console.log(colorgroups[i]);
+				if ($(this).hasClass('color-'+colorgroups[i])){	//this 是哪個group
+					var thisid=$(this).attr('id');
+					var color = thisid.replace("color-"+colorgroups[i]+"-","");
+					console.log('color=',color);
+					for (var j = 0 ; j<colorgroups.length ; j ++){			//找除了這個之外的group
+						if (j != i){
+							$("#color-"+colorgroups[j]+"-"+color).val($("#color-"+colorgroups[i]+"-"+color).val());  //修改找到的group val
+						}
+					}
+					
+				}
+			}
+			
+			GetShowColor();
+		});
+		GetShowColor();
+	})
+	function plotMeca(){
+		var url="./plot_meca.php";
+		$.ajax({
+			url:url,
+			data:{	'strike':$('#strike').val(),
+					'dip':$('#dip').val(),
+					'slip':$('#slip').val(),
+					'title':$('#title').val(),
+					'color_red':$("#color-textbox-red").val(),
+					'color_green':$("#color-textbox-green").val(),
+					'color_blue':$("#color-textbox-blue").val()					
+			},
+			dataType: 'text',
+			method:'POST',
+			async: false,
+			success: function(data){
+				if (data != 0){
+					
+					var html="<p>畫圖結果:</p>";
+					html+='<img src="'+data+'" alt="'+$('#title').val()+'" >';
+				}else{
+					var html='參數錯誤，畫不出來!';
+				}
+					console.log("return:",data);
+					$('#image-meca').html(html);
+			},
+			error: function(jqXHR,textStatus,errorThrown){
+				console.log(jqXHR,',',textStatus,',',errorThrown);
+			}
+		})
+	}
+	function GetShowColor(){		//在預覽視窗顯示顏色
+		var red=	$("#color-textbox-red").val();
+		var green=	$("#color-textbox-green").val();
+		var blue=	$("#color-textbox-blue").val();
+		$("#display-color").css("background-color","rgb("+red+", "+green+", "+blue+")");
+	}
+	function SetColor(R,G,B){		//點選顏色按鍵，取得顏色
+		$("#color-textbox-red").val(R);
+		$("#color-textbox-green").val(G);
+		$("#color-textbox-blue").val(B);
+		GetShowColor();	
+	}
+	
+</script>
+</head>
+<body>
+<div class="container">
+	<div class="text-center" style="padding:20px;">
+		<h2 style="font-family:Microsoft JhengHei;">線上震源機制解 </h2>
+	</div>
+	<div class="col-md-6 text-left"  style="margin-top:50px;">
+		請輸入震源機制(Strike,Dip,Slip)參數，以獲得線上震源機制結果: 
+		<form class="form-horizontal" onsubmit="plotMeca();return false;">
+		<div class="form-group">
+			<label class="col-sm-5 control-label" for="srike">strike(走向)<b class="red">*</b></label>
+			<div class="col-sm-7">
+				<input type="number" class="form-control" id="strike" placeholder="strike(走向) 0º~360º" min="0" max="360" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-5 control-label" for="dip">dip(傾角) <b class="red">*</b></label>
+			<div class="col-sm-7">
+				<input type="number" class="form-control" id="dip" placeholder="dip(傾角) 0º~90º" min="0" max="90" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-5 control-label" for="slip">slip(滑移角) <b class="red">*</b></label>
+			<div class="col-sm-7">
+				<input type="number" class="form-control" id="slip" placeholder="slip(滑移角) -180º~180º" min="-180" max="180" required></input>
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label class="col-sm-5 control-label" for="title">title(標題，僅限英數文字)</label>
+			<div class="col-sm-7">
+				<input type="text" class="form-control" id="title" placeholder="title(標題)"></input>
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<label class="col-sm-4 control-label" for="color">RGB色碼(0-255) <b class="red">*</b></label>
+			<div class="col-sm-2">
+				<input type="number" class="form-control color-ctrl color-textbox" id="color-textbox-red"  placeholder="R(0-255)" value="255" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				<input type="number" class="form-control color-ctrl color-textbox" id="color-textbox-green"  placeholder="G(0-255)" value="0" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				<input type="number" class="form-control color-ctrl color-textbox" id="color-textbox-blue"  placeholder="B(0-255)" value="0" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				<div class="color" id="display-color"></div>
+			</div>
+		</div>
+		<div class="form-group">
+			
+			<div class="col-sm-2 col-sm-offset-4">
+				<input type="range" class="form-control color-ctrl color-bar" id="color-bar-red"  placeholder="R(0-255)" value="255" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				<input type="range" class="form-control color-ctrl color-bar" id="color-bar-green"  placeholder="G(0-255)" value="0" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				<input type="range" class="form-control color-ctrl color-bar" id="color-bar-blue"  placeholder="B(0-255)" value="0" min="0" max="255" required></input>
+			</div>
+			<div class="col-sm-2">
+				
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-5 control-label" style="float:left;" for="color">顏色快選 </label>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(255,0,0)" style="background-color:rgb(255,0,0)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(255,255,0)" style="background-color:rgb(255,255,0)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(0,255,0)" style="background-color:rgb(0,255,0)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(0,255,255)" style="background-color:rgb(0,255,255)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(0,0,255)" style="background-color:rgb(0,0,255)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(255,0,255)" style="background-color:rgb(255,0,255)" id="display-color"></div>
+			</div>
+			<div class="col-sm-1 sample-color-div">
+				<div class="color btn btn-sm" onclick="SetColor(41,36,33)" style="background-color:rgb(41,36,33)" id="display-color"></div>
+			</div>
+		
+		</div>
+		
+		<div class="text-right col-sm-7 col-sm-offset-5">
+			<button type="submit" class="btn btn-primary btn-block">送出</button>
+		</div>
+		</form>
+		<div style="margin:10px;">
+			<button class="btn btn-info" id="explan-toggle">震源機制解各參數說明</button>
+		</div>
+		<div id="explandiv">
+
+			<h3 class="page-header">震源機制解各參數說明</h3>
+
+			<p>
+				斷層機制解是地震學上用來判定震源錯動型態的一種表現方式，
+				一般是透過地震P波的初動解或地震波形逆推等方法來取得。
+				如下圖所示，描述震源機制的參數包括敘述斷層面幾何形貌的<b class="red">走向</b>(strike)和<b class="red">傾角</b>(dip)，
+				以及上盤相對於下盤的<b class="red">滑移角</b>(slip or rake)。
+			</p>
+			<hr>
+			<p>
+			斷層<b class="red">走向</b>的定義是斷層面和水平面的交線相對於正北的方位(azimuth)，
+			由正北順時鐘繞一圈為360º；
+			<b class="red">傾角</b>則是斷層面與水平面的夾角，
+			水平為0º，而垂直面為90º。
+			特別要注意的是斷層的走向與傾角方向有關，
+			即傾角方向(dip direction)一定位在走向朝右90º的方向，
+			例如下圖左，因為斷層面朝東南方傾斜，
+			所以斷層走向為東北而非西南。
+			</p>
+			<hr>
+			<p>
+			在斷層面上，上盤相對於下盤的滑移向量與斷層走向的逆時鐘夾角稱之為<b class="red">滑移角</b>，
+			這是控制斷層錯動型態的主要參數。
+			如果滑移角為90º，那就表示上盤相對於下盤往上滑移，
+			是為逆衝斷層的錯動型態，
+			反之，若滑移角為-90º，
+			表示上盤往下滑移，則是正斷層的錯動型態；
+			同理，滑移角0º相當於斷層左側的地塊向站在斷層線上的觀察者靠近，
+			表示左移的錯動型態，而180º或-180º都是右移錯動型態。
+			</p>
+			<hr>
+			<p>
+				<img width="100%" src="./image/slipimage.png"></img>
+			</p>
+			<hr>
+			<p>
+			走向的範圍是0º-360º，傾角的範圍是0º-90º，
+			而滑移角的範圍則是在-180º-180º之間。
+			以上圖為例，震源機制參數的走向、傾角和滑移角約為45º、30º和25º，
+			對應的震源海灘球如下圖，而另一輔助面以高角度向北北東方向傾斜，走向則為西北西方向。
+			</p>
+			<hr>
+			<p class="text-center">
+				<img width="50%" src="./image/mecaimage2.png">
+			</p>
+		</div>
+	</div>
+	<div class="col-md-6" id="image-meca" >
+		<!--		
+
+		<img src="/webmeca/tmp_image/4UBBiTp5wQ/meca.gif"></img>
+		-->
+	</div>
+</div>
+</body>
+
+</html>
