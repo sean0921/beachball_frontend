@@ -33,29 +33,31 @@
 		GetShowColor();
 	})
 	function plotMeca(){
-		var url="./plot_meca.php";
+		var url="http://127.0.0.1:5000/simplemeca";
+		var RequestData={
+			'strike':$('#strike').val(),
+			'dip':$('#dip').val(),
+			'rake':$('#rake').val(),
+			'title':$('#title').val(),
+			'color_r':$("#color-textbox-red").val(),
+			'color_g':$("#color-textbox-green").val(),
+			'color_b':$("#color-textbox-blue").val()					
+		}
 		$.ajax({
 			url:url,
-			data:{	'strike':$('#strike').val(),
-					'dip':$('#dip').val(),
-					'slip':$('#slip').val(),
-					'title':$('#title').val(),
-					'color_red':$("#color-textbox-red").val(),
-					'color_green':$("#color-textbox-green").val(),
-					'color_blue':$("#color-textbox-blue").val()					
-			},
-			dataType: 'text',
+			data:JSON.stringify(RequestData),
+			dataType: 'json',
+			contentType: 'application/json;charset=utf-8',
 			method:'POST',
 			async: false,
-			success: function(data){
-				if (data != 0){
-					
+			success: function(result_data){
+				//if (data != 0){
 					var html="<p>畫圖結果:</p>";
-					html+='<img src="'+data+'" alt="'+$('#title').val()+'" >';
-				}else{
-					var html='參數錯誤，畫不出來!';
-				}
-					console.log("return:",data);
+					html+='<img src="'+result_data.image_url+'" alt="'+$('#title').val()+'" >';
+				//}else{
+				//	var html='參數錯誤，畫不出來!';
+				//}
+					console.log("return:",result_data);
 					$('#image-meca').html(html);
 			},
 			error: function(jqXHR,textStatus,errorThrown){
@@ -99,9 +101,9 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-sm-5 control-label" for="slip">slip(滑移角) <b class="red">*</b></label>
+			<label class="col-sm-5 control-label" for="rake">rake(滑移角) <b class="red">*</b></label>
 			<div class="col-sm-7">
-				<input type="number" class="form-control" id="slip" placeholder="slip(滑移角) -180º~180º" min="-180" max="180" required></input>
+				<input type="number" class="form-control" id="rake" placeholder="rake(滑移角) -180º~180º" min="-180" max="180" required></input>
 			</div>
 		</div>
 		
